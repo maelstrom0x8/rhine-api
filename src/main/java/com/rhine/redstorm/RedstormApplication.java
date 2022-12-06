@@ -1,15 +1,13 @@
 package com.rhine.redstorm;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import io.quarkus.runtime.Quarkus;
+import io.quarkus.runtime.annotations.QuarkusMain;
 
-@SpringBootApplication
-@ComponentScan(basePackages = "com.rhine.redstorm.*")
+@QuarkusMain
 public class RedstormApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(RedstormApplication.class, args);
+		Quarkus.run(args);
 	}
 
 }

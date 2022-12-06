@@ -1,27 +1,30 @@
 package com.rhine.redstorm.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import javax.enterprise.context.ApplicationScoped;
 
 import com.rhine.redstorm.domain.Task;
 import com.rhine.redstorm.domain.TaskList;
 import com.rhine.redstorm.repository.TaskListRepository;
 
-@Service
+@ApplicationScoped
 public class TaskService implements ITaskService {
 
-    @Autowired
-    TaskListRepository taskListRepository;
+    
+    private final TaskListRepository taskListRepository;
+
+    public TaskService(TaskListRepository taskListRepository) {
+        this.taskListRepository = taskListRepository;
+    }
 
     @Override
     public TaskList createList(String name) {
         TaskList list = new TaskList();
         list.setName(name);
-        return taskListRepository.save(list);
+        taskListRepository.persist(list);
+        return list;
     }
 
     @Override
@@ -36,13 +39,13 @@ public class TaskService implements ITaskService {
 
     @Override
     public void addTask(Long list_id, Task task) {
-        Optional<TaskList> list = taskListRepository.findById(list_id);
+        Optional<TaskList> list = Optional.ofNullable(taskListRepository.findById(list_id));
         
         if(list.isPresent()) {
             list.get().getTasks().add(task);
             task.setList(list.get());
 
-            taskListRepository.save(list.get());
+            taskListRepository.persist(list.get());
         }
     }
 
@@ -58,7 +61,7 @@ public class TaskService implements ITaskService {
 
     @Override
     public void removeTasks(List<Long> ids) {
-        taskListRepository.deleteAllByIdInBatch(ids);
+        ids.stream().forEach(i -> taskListRepository.deleteById(i));
     }
 
     @Override

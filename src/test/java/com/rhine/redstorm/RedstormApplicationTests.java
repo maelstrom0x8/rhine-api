@@ -7,11 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import javax.inject.Inject;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.assertj.core.api.Assertions.*;
 
 import com.rhine.redstorm.domain.Task;
 import com.rhine.redstorm.domain.TaskList;
@@ -19,16 +21,20 @@ import com.rhine.redstorm.repository.TaskListRepository;
 import com.rhine.redstorm.repository.TaskRepository;
 import com.rhine.redstorm.service.TaskService;
 
-@SpringBootTest
+import io.quarkus.test.TestTransaction;
+import io.quarkus.test.junit.QuarkusTest;
+
+@QuarkusTest
+@TestTransaction
 class RedstormApplicationTests {
 
-	@Autowired
+	@Inject
 	private TaskService taskService;
 
-	@Autowired
+	@Inject
 	private TaskListRepository taskListRepository;
 
-	@Autowired
+	@Inject
 	private TaskRepository taskRepository;
 
 	Optional<TaskList> daily;
@@ -51,11 +57,21 @@ class RedstormApplicationTests {
 
 	@Test
 	public void testTaskListCreate() {
-		
-		Optional<TaskList> d1 = taskListRepository.findByName("Daily");
+		TaskList list = new TaskList();
+		list.setName("Weekends");
+		taskListRepository.persist(list);
 
-		assertTrue(d1.isPresent());
-		assertEquals("Daily", d1.get().getName());
+		Optional<TaskList> d1 = taskListRepository.findByName("Weekends");
+		
+		assertThat(d1)
+			.isNotNull()
+			.isPresent()
+			.get()
+			.extracting(TaskList::getName)
+			.isEqualTo("Weekends");
+
+		assertThat(d1.get().getId())
+			.isNotNull();
 	}
 
 	@Test
@@ -64,7 +80,8 @@ class RedstormApplicationTests {
 		task.setName("Workout");
 		task.setList(daily.get());
 
-		Task t1 = taskRepository.save(task);
+		taskRepository.persist(task);
+		Task t1 = task;
 
 		assertTrue(t1.getId() != null);
 		

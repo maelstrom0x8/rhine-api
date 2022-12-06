@@ -2,11 +2,16 @@ package com.rhine.redstorm.repository;
 
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import javax.enterprise.context.ApplicationScoped;
 
 import com.rhine.redstorm.domain.TaskList;
 
-public interface TaskListRepository extends JpaRepository<TaskList, Long> {
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
-    Optional<TaskList> findByName(String name);
+@ApplicationScoped
+public class TaskListRepository implements PanacheRepositoryBase<TaskList, Long> {
+
+    public Optional<TaskList> findByName(String name) {
+        return find("name", name).firstResultOptional();
+    }
 }
